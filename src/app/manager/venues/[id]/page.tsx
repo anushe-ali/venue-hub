@@ -4,7 +4,8 @@ import VenueForm from '@/components/venues/VenueForm'
 import Link from 'next/link'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
-export default async function EditVenuePage({ params }: { params: { id: string } }) {
+export default async function EditVenuePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -15,7 +16,7 @@ export default async function EditVenuePage({ params }: { params: { id: string }
   const { data: venue } = await supabase
     .from('venues')
     .select('*, equipment:venue_equipment(*), layouts:venue_layouts(*)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!venue) notFound()

@@ -9,7 +9,8 @@ import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 import { formatCurrency, formatDate, formatRelative, AMENITIES_LIST } from '@/lib/utils'
 import VenueAvailabilityCalendar from '@/components/calendar/VenueAvailabilityCalendar'
 
-export default async function VenueDetailPage({ params }: { params: { id: string } }) {
+export default async function VenueDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = createClient()
 
   const { data: venue } = await supabase
@@ -21,7 +22,7 @@ export default async function VenueDetailPage({ params }: { params: { id: string
       equipment:venue_equipment(*),
       reviews(*, reviewer:profiles(full_name, avatar_url))
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('is_active', true)
     .single()
 
@@ -30,14 +31,14 @@ export default async function VenueDetailPage({ params }: { params: { id: string
   const { data: bookings } = await supabase
     .from('bookings')
     .select('event_date, start_time, end_time, setup_start_time, cleanup_end_time, status')
-    .eq('venue_id', params.id)
+    .eq('venue_id', id)
     .in('status', ['pending', 'approved'])
     .gte('event_date', new Date().toISOString().split('T')[0])
 
   const { data: blackouts } = await supabase
     .from('venue_blackouts')
     .select('*')
-    .eq('venue_id', params.id)
+    .eq('venue_id', id)
 
   const reviews = (venue.reviews as any[]) ?? []
   const avgRating = reviews.length
@@ -195,7 +196,7 @@ export default async function VenueDetailPage({ params }: { params: { id: string
           <div>
             <h2 className="text-lg font-semibold text-slate-900 mb-3">Availability</h2>
             <VenueAvailabilityCalendar
-              venueId={venue.id}
+              venueId={id}
               bookings={bookings ?? []}
               blackouts={blackouts ?? []}
               operatingHours={venue.operating_hours}
@@ -262,7 +263,7 @@ export default async function VenueDetailPage({ params }: { params: { id: string
             </div>
 
             <Link
-              href={`/venues/${venue.id}/book`}
+              href={`/venues/${id}/book`}
               className="btn-primary btn w-full justify-center btn-lg mb-3"
             >
               <CalendarDaysIcon className="h-5 w-5" />

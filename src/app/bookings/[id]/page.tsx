@@ -15,7 +15,8 @@ import PaymentPanel from '@/components/payments/PaymentPanel'
 
 export default async function BookingDetailPage({
   params, searchParams
-}: { params: { id: string }; searchParams: { success?: string } }) {
+}: { params: Promise<{ id: string }>; searchParams: Promise<{ success?: string }> }) {
+  const { id } = await params
   const query = await searchParams
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -33,7 +34,7 @@ export default async function BookingDetailPage({
       payments(*),
       messages(*, sender:profiles(full_name, avatar_url))
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!booking) notFound()
