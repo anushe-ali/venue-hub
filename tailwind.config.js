@@ -9,16 +9,16 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50:  '#f0f4ff',
-          100: '#dbe4ff',
-          200: '#bac8ff',
-          300: '#91a7ff',
-          400: '#748ffc',
-          500: '#5c7cfa',
-          600: '#4c6ef5',
-          700: '#4263eb',
-          800: '#3b5bdb',
-          900: '#364fc7',
+          50:  '#fff0f2',  // very light pinkish
+          100: '#ffd6da',
+          200: '#ffadb3',
+          300: '#ff8590',
+          400: '#ff5c6e',
+          500: '#ff3350', // main maroon/red
+          600: '#e62a46',
+          700: '#b72236',
+          800: '#8c1b28',
+          900: '#66131b',
         },
       },
       fontFamily: {
