@@ -14,6 +14,7 @@ const TYPE_ICONS: Record<string, string> = {
   event_reminder:         '⏰',
   modification_requested: '🔄',
   modification_approved:  '✅',
+  modification_rejected:  '❌',
   refund_processed:       '💰',
 }
 

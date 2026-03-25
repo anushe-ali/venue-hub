@@ -12,6 +12,9 @@ import {
 import BookingActions from '@/components/bookings/BookingActions'
 import MessageThread from '@/components/bookings/MessageThread'
 import PaymentPanel from '@/components/payments/PaymentPanel'
+import ModificationRequestForm from '@/components/bookings/ModificationRequestForm'
+import ModificationReviewPanel from '@/components/bookings/ModificationReviewPanel'
+import ModificationHistory from '@/components/bookings/ModificationHistory'
 
 export default async function BookingDetailPage({
   params, searchParams
@@ -24,7 +27,7 @@ export default async function BookingDetailPage({
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
 
-  const { data: booking } = await supabase
+  const { data: booking, error: bookingError } = await supabase
     .from('bookings')
     .select(`
       *,
@@ -37,7 +40,17 @@ export default async function BookingDetailPage({
     .eq('id', id)
     .single()
 
-  if (!booking) notFound()
+  if (bookingError || !booking) {
+    console.error('Booking query error:', bookingError)
+    notFound()
+  }
+
+  // Fetch modifications separately to avoid query failures
+  const { data: modifications } = await supabase
+    .from('booking_modifications')
+    .select('*')
+    .eq('booking_id', id)
+    .order('created_at', { ascending: false })
 
   // Authorization check
   const isOrganizer = booking.organizer_id === user.id
@@ -52,6 +65,8 @@ export default async function BookingDetailPage({
     (a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   )
   const equipment = (booking.equipment ?? []) as any[]
+  const mods = (modifications ?? []) as any[]
+  const pendingModifications = mods.filter((m: any) => m.status === 'pending')
 
   const totalPaid = payments.filter((p: any) => p.payment_type !== 'refund').reduce((s: number, p: any) => s + p.amount, 0)
   const totalRefunded = payments.filter((p: any) => p.payment_type === 'refund').reduce((s: number, p: any) => s + p.amount, 0)
@@ -180,6 +195,21 @@ export default async function BookingDetailPage({
             />
           )}
 
+          {/* Pending Modification Reviews (manager) */}
+          {(isManager || isAdmin) && pendingModifications.length > 0 && (
+            <ModificationReviewPanel
+              booking={booking as any}
+              modification={pendingModifications[0]}
+              venue={venue}
+              isManager={isManager}
+            />
+          )}
+
+          {/* Modification History */}
+          {mods.length > 0 && (
+            <ModificationHistory modifications={mods} />
+          )}
+
           {/* Messages */}
           <MessageThread
             bookingId={booking.id}
@@ -235,6 +265,15 @@ export default async function BookingDetailPage({
               booking={booking as any}
               balance={balance}
               totalPaid={totalPaid}
+            />
+          )}
+
+          {/* Request Modification (organizer only, pending/approved bookings) */}
+          {isOrganizer && ['pending', 'approved'].includes(booking.status) && (
+            <ModificationRequestForm
+              booking={booking as any}
+              venue={venue}
+              organizer={organizer}
             />
           )}
 

@@ -8,7 +8,8 @@ export type PaymentStatus = 'unpaid' | 'deposit_paid' | 'fully_paid' | 'refunded
 export type NotificationType =
   | 'booking_submitted' | 'booking_approved' | 'booking_rejected'
   | 'booking_cancelled' | 'payment_confirmed' | 'event_reminder'
-  | 'modification_requested' | 'modification_approved' | 'refund_processed'
+  | 'modification_requested' | 'modification_approved' | 'modification_rejected'
+  | 'refund_processed'
 
 export interface Profile {
   id: string
@@ -144,14 +145,24 @@ export interface BookingModification {
   id: string
   booking_id: string
   requested_by: string
+  old_event_date: string
+  old_start_time: string
+  old_end_time: string
+  old_venue_fee: number
   new_event_date?: string
   new_start_time?: string
   new_end_time?: string
+  new_venue_fee: number
+  new_tax_amount: number
+  new_total_amount: number
+  cost_adjustment: number
   reason: string
   status: BookingStatus
+  reviewer_id?: string
   reviewed_at?: string
   reviewer_notes?: string
   created_at: string
+  requested_by_profile?: Profile
 }
 
 export interface Payment {
