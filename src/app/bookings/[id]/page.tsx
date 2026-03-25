@@ -16,6 +16,7 @@ import PaymentPanel from '@/components/payments/PaymentPanel'
 export default async function BookingDetailPage({
   params, searchParams
 }: { params: { id: string }; searchParams: { success?: string } }) {
+  const query = await searchParams
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -58,7 +59,7 @@ export default async function BookingDetailPage({
   return (
     <div className="max-w-5xl mx-auto">
       {/* Success banner */}
-      {searchParams.success && (
+      {query.success && (
         <div className="mb-6 rounded-xl bg-green-50 border border-green-200 p-4 flex items-center gap-3">
           <CheckCircleIcon className="h-5 w-5 text-green-600 shrink-0" />
           <div>

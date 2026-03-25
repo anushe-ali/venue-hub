@@ -4,6 +4,7 @@ import { formatDate, formatRelative } from '@/lib/utils'
 import { UsersIcon } from '@heroicons/react/24/outline'
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: { role?: string; q?: string } }) {
+  const params = await searchParams
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -12,8 +13,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: {
   if (profile?.role !== 'admin') redirect('/dashboard')
 
   let query = supabase.from('profiles').select('*').order('created_at', { ascending: false })
-  if (searchParams.role) query = query.eq('role', searchParams.role)
-  if (searchParams.q) query = query.or(`full_name.ilike.%${searchParams.q}%,email.ilike.%${searchParams.q}%`)
+  if (params.role) query = query.eq('role', params.role)
+  if (params.q) query = query.or(`full_name.ilike.%${params.q}%,email.ilike.%${params.q}%`)
 
   const { data: users, count } = await query
 
@@ -36,7 +37,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: {
               key={r}
               href={r === 'all' ? '/admin/users' : `/admin/users?role=${r}`}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-                (r === 'all' && !searchParams.role) || searchParams.role === r
+                (r === 'all' && !params.role) || params.role === r
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -46,8 +47,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: {
           ))}
         </div>
         <form method="GET" action="/admin/users">
-          {searchParams.role && <input type="hidden" name="role" value={searchParams.role} />}
-          <input name="q" defaultValue={searchParams.q} className="input w-64" placeholder="Search by name or email…" />
+          {params.role && <input type="hidden" name="role" value={params.role} />}
+          <input name="q" defaultValue={params.q} className="input w-64" placeholder="Search by name or email…" />
         </form>
       </div>
 

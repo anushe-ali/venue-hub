@@ -5,6 +5,7 @@ import { formatCurrency, formatDate, formatTime, getStatusColor } from '@/lib/ut
 import { CalendarDaysIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 
 export default async function BookingsPage({ searchParams }: { searchParams: { status?: string } }) {
+  const params = await searchParams
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -15,7 +16,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: { s
     .eq('organizer_id', user.id)
     .order('event_date', { ascending: false })
 
-  if (searchParams.status) query = query.eq('status', searchParams.status)
+  if (params.status) query = query.eq('status', params.status)
 
   const { data: bookings } = await query
 
@@ -40,7 +41,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: { s
             key={s}
             href={s === 'all' ? '/bookings' : `/bookings?status=${s}`}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium capitalize transition-colors ${
-              (s === 'all' && !searchParams.status) || searchParams.status === s
+              (s === 'all' && !params.status) || params.status === s
                 ? 'bg-white text-slate-900 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
@@ -55,7 +56,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: { s
           <CalendarDaysIcon className="h-14 w-14 text-slate-200 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-slate-700 mb-2">No bookings found</h3>
           <p className="text-slate-400 text-sm mb-5">
-            {searchParams.status ? `No ${searchParams.status} bookings.` : "You haven't made any bookings yet."}
+            {params.status ? `No ${params.status} bookings.` : "You haven't made any bookings yet."}
           </p>
           <Link href="/venues" className="btn-primary btn btn-sm">Browse Venues</Link>
         </div>

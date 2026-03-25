@@ -5,6 +5,7 @@ import { formatCurrency, formatRelative } from '@/lib/utils'
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline'
 
 export default async function AdminVenuesPage({ searchParams }: { searchParams: { q?: string; active?: string } }) {
+  const params = await searchParams
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -17,9 +18,9 @@ export default async function AdminVenuesPage({ searchParams }: { searchParams: 
     .select('*, manager:profiles(full_name, email), bookings:bookings(id)')
     .order('created_at', { ascending: false })
 
-  if (searchParams.active === 'true')  query = query.eq('is_active', true)
-  if (searchParams.active === 'false') query = query.eq('is_active', false)
-  if (searchParams.q) query = query.or(`name.ilike.%${searchParams.q}%,city.ilike.%${searchParams.q}%`)
+  if (params.active === 'true')  query = query.eq('is_active', true)
+  if (params.active === 'false') query = query.eq('is_active', false)
+  if (params.q) query = query.or(`name.ilike.%${params.q}%,city.ilike.%${params.q}%`)
 
   const { data: venues } = await query
 
@@ -43,7 +44,7 @@ export default async function AdminVenuesPage({ searchParams }: { searchParams: 
               key={label}
               href={value ? `/admin/venues?active=${value}` : '/admin/venues'}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                (searchParams.active ?? '') === value
+                (params.active ?? '') === value
                   ? 'bg-white text-slate-900 shadow-sm'
                   : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -53,8 +54,8 @@ export default async function AdminVenuesPage({ searchParams }: { searchParams: 
           ))}
         </div>
         <form method="GET" action="/admin/venues">
-          {searchParams.active && <input type="hidden" name="active" value={searchParams.active} />}
-          <input name="q" defaultValue={searchParams.q} className="input w-64" placeholder="Search by name or city…" />
+          {params.active && <input type="hidden" name="active" value={params.active} />}
+          <input name="q" defaultValue={params.q} className="input w-64" placeholder="Search by name or city…" />
         </form>
       </div>
 

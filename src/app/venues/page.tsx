@@ -16,6 +16,7 @@ interface SearchParams {
 }
 
 export default async function VenuesPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams
   const supabase = createClient()
 
   let query = supabase
@@ -24,13 +25,13 @@ export default async function VenuesPage({ searchParams }: { searchParams: Searc
     .eq('is_active', true)
     .order('created_at', { ascending: false })
 
-  if (searchParams.city)       query = query.ilike('city', `%${searchParams.city}%`)
-  if (searchParams.venue_type) query = query.eq('venue_type', searchParams.venue_type)
-  if (searchParams.capacity)   query = query.gte('capacity', parseInt(searchParams.capacity))
-  if (searchParams.min_price)  query = query.gte('hourly_rate', parseInt(searchParams.min_price))
-  if (searchParams.max_price)  query = query.lte('hourly_rate', parseInt(searchParams.max_price))
-  if (searchParams.amenities) {
-    const amenList = searchParams.amenities.split(',')
+  if (params.city)       query = query.ilike('city', `%${params.city}%`)
+  if (params.venue_type) query = query.eq('venue_type', params.venue_type)
+  if (params.capacity)   query = query.gte('capacity', parseInt(params.capacity))
+  if (params.min_price)  query = query.gte('hourly_rate', parseInt(params.min_price))
+  if (params.max_price)  query = query.lte('hourly_rate', parseInt(params.max_price))
+  if (params.amenities) {
+    const amenList = params.amenities.split(',')
     query = query.contains('amenities', amenList)
   }
 
@@ -52,7 +53,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Searc
           <h1 className="page-title">Discover Venues</h1>
           <p className="page-subtitle">
             {venuesWithRating.length} venue{venuesWithRating.length !== 1 ? 's' : ''} available
-            {searchParams.city ? ` in ${searchParams.city}` : ''}
+            {params.city ? ` in ${params.city}` : ''}
           </p>
         </div>
       </div>
@@ -60,7 +61,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Searc
       <div className="flex gap-6">
         {/* Filters sidebar */}
         <aside className="w-64 shrink-0">
-          <VenueFilters searchParams={searchParams} />
+          <VenueFilters searchParams={params} />
         </aside>
 
         {/* Results */}
