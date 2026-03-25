@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { BuildingOffice2Icon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { createClient } from '@/lib/supabase/client'
@@ -13,7 +13,6 @@ interface LoginForm {
 }
 
 export default function LoginPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/dashboard'
   const [showPassword, setShowPassword] = useState(false)
@@ -30,10 +29,18 @@ export default function LoginPage() {
     if (error) {
       setError(error.message)
       setLoading(false)
-    } else {
-      router.push(redirect)
-      router.refresh()
+      return
     }
+
+    // Ensure the auth session is persisted before navigating to a protected route.
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      setError('Signed in, but failed to establish a session. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    window.location.assign(redirect)
   }
 
   return (
