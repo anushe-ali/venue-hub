@@ -66,29 +66,24 @@ export default function ModificationRequestForm({ booking, venue, organizer }: M
 
   const costs = calculateNewCosts()
 
-  // Check availability
+  // Check availability using RPC function (bypasses RLS)
   const checkAvailability = async () => {
     const supabase = createClient()
     const setupStart = addMinutesToTime(newStartTime, -venue.setup_buffer_mins)
     const cleanupEnd = addMinutesToTime(newEndTime, venue.cleanup_buffer_mins)
 
-    const { data: conflicts, error } = await supabase
-      .from('bookings')
-      .select('id, event_name, start_time, end_time, setup_start_time, cleanup_end_time')
-      .eq('venue_id', booking.venue_id)
-      .eq('event_date', newEventDate)
-      .in('status', ['pending', 'approved'])
-      .neq('id', booking.id)
+    const { data: conflicts, error } = await supabase.rpc('check_slot_availability', {
+      p_venue_id: booking.venue_id,
+      p_event_date: newEventDate,
+      p_setup_start: setupStart,
+      p_cleanup_end: cleanupEnd,
+      p_exclude_booking_id: booking.id
+    })
 
     if (error) throw error
 
-    // Check for time overlap
-    const hasConflict = conflicts?.some(b => {
-      // Overlap check: new booking's window overlaps existing booking's window
-      return setupStart < b.cleanup_end_time && cleanupEnd > b.setup_start_time
-    })
-
-    if (hasConflict) {
+    // RPC returns array with conflict details, or empty array if no conflict
+    if (conflicts && conflicts.length > 0) {
       throw new Error('The selected time slot conflicts with another booking')
     }
 

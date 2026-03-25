@@ -13,6 +13,7 @@ import {
   addMinutesToTime, EVENT_TYPES, generateTimeSlots,
 } from '@/lib/utils'
 import type { Venue, VenueEquipment, VenueLayout } from '@/types'
+import AvailabilityChecker from './AvailabilityChecker'
 
 interface BookingFormData {
   event_name: string
@@ -108,7 +109,14 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
         .select('id')
         .single()
 
-      if (bookingErr) throw bookingErr
+      if (bookingErr) {
+        // Check if it's a booking conflict error
+        if (bookingErr.message?.includes('Booking conflict') ||
+            bookingErr.message?.includes('overlaps')) {
+          throw new Error('CONFLICT:This time slot is no longer available. Another booking was just created for this time. Please select a different date or time.')
+        }
+        throw bookingErr
+      }
 
       // Insert booking equipment
       if (selectedEquipment.length > 0) {
@@ -130,7 +138,17 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
 
       router.push(`/bookings/${booking.id}?success=true`)
     } catch (err: any) {
-      setError(err.message ?? 'Failed to submit booking. The time slot may no longer be available.')
+      const errorMessage = err.message ?? 'Failed to submit booking'
+
+      // Check if it's a conflict error
+      if (errorMessage.startsWith('CONFLICT:')) {
+        setError(errorMessage.replace('CONFLICT:', ''))
+        // Go back to date/time step so user can select different time
+        setStep(1)
+      } else {
+        setError(errorMessage)
+      }
+
       setSubmitting(false)
     }
   }
@@ -260,6 +278,16 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
                   <span>Cleanup ends:</span><span>{cleanupEnd ? formatTime(cleanupEnd) : '—'}</span>
                 </div>
               </div>
+            )}
+            {eventDate && startTime && endTime && (
+              <AvailabilityChecker
+                venueId={venue.id}
+                eventDate={eventDate}
+                startTime={startTime}
+                endTime={endTime}
+                setupBufferMins={venue.setup_buffer_mins}
+                cleanupBufferMins={venue.cleanup_buffer_mins}
+              />
             )}
             {venue.layouts?.length > 0 && (
               <div>

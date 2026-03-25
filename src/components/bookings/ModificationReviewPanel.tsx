@@ -33,28 +33,24 @@ export default function ModificationReviewPanel({
 
   if (!isManager || modification.status !== 'pending') return null
 
-  // Check availability before approval
+  // Check availability before approval using RPC function (bypasses RLS)
   const checkAvailability = async () => {
     const supabase = createClient()
     const setupStart = addMinutesToTime(modification.new_start_time!, -venue.setup_buffer_mins)
     const cleanupEnd = addMinutesToTime(modification.new_end_time!, venue.cleanup_buffer_mins)
 
-    const { data: conflicts, error } = await supabase
-      .from('bookings')
-      .select('id, event_name, start_time, end_time, setup_start_time, cleanup_end_time')
-      .eq('venue_id', booking.venue_id)
-      .eq('event_date', modification.new_event_date)
-      .in('status', ['pending', 'approved'])
-      .neq('id', booking.id)
+    const { data: conflicts, error } = await supabase.rpc('check_slot_availability', {
+      p_venue_id: booking.venue_id,
+      p_event_date: modification.new_event_date,
+      p_setup_start: setupStart,
+      p_cleanup_end: cleanupEnd,
+      p_exclude_booking_id: booking.id
+    })
 
     if (error) throw error
 
-    // Check for time overlap
-    const hasConflict = conflicts?.some(b => {
-      return setupStart < b.cleanup_end_time && cleanupEnd > b.setup_start_time
-    })
-
-    if (hasConflict) {
+    // RPC returns array with conflict details, or empty array if no conflict
+    if (conflicts && conflicts.length > 0) {
       throw new Error('The requested time slot is no longer available')
     }
 
