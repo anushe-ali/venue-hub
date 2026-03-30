@@ -42,12 +42,14 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
   const [selectedEquipment, setSelectedEquipment] = useState<string[]>([])
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<BookingFormData>({
-    defaultValues: { equipment_ids: [] }
+    defaultValues: { equipment_ids: [] },
+    mode: 'onChange'
   })
 
   const startTime = watch('start_time')
   const endTime = watch('end_time')
   const eventDate = watch('event_date')
+  const layoutId = watch('layout_id')
 
   // Auto-calculate setup/cleanup times
   const setupStart = startTime ? addMinutesToTime(startTime, -venue.setup_buffer_mins) : ''
@@ -82,6 +84,13 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
     const supabase = createClient()
 
     try {
+      // Validate attendance against capacity
+      const selectedLayout = data.layout_id ? venue.layouts.find(l => l.id === data.layout_id) : null
+      const maxCapacity = selectedLayout ? selectedLayout.capacity : venue.capacity
+      if (data.expected_attendance > maxCapacity) {
+        throw new Error(`Expected attendance (${data.expected_attendance}) exceeds capacity (${maxCapacity})`)
+      }
+
       // Insert booking
       const { data: booking, error: bookingErr } = await supabase
         .from('bookings')
@@ -156,8 +165,8 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
   const timeSlots = generateTimeSlots('06:00', '23:00', 30)
 
   const canProceed = () => {
-    if (step === 0) return true // form validation handles
-    if (step === 1) return !!eventDate && !!startTime && !!endTime && startTime < endTime
+    if (step === 0) return !errors.event_name && !errors.event_type
+    if (step === 1) return !!eventDate && !!startTime && !!endTime && startTime < endTime && !!watch('expected_attendance') && !errors.expected_attendance
     return true
   }
 
@@ -211,19 +220,6 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
               {errors.event_type && <p className="form-error">{errors.event_type.message}</p>}
-            </div>
-            <div>
-              <label className="label">Expected attendance *</label>
-              <input
-                {...register('expected_attendance', {
-                  required: 'Required',
-                  min: { value: 1, message: 'Must be at least 1' },
-                  max: { value: venue.capacity, message: `Max capacity is ${venue.capacity}` },
-                })}
-                type="number" className="input" placeholder="e.g. 150"
-              />
-              {errors.expected_attendance && <p className="form-error">{errors.expected_attendance.message}</p>}
-              <p className="text-xs text-slate-400 mt-1">Max venue capacity: {venue.capacity}</p>
             </div>
             <div>
               <label className="label">Special requests (optional)</label>
@@ -300,6 +296,23 @@ export default function BookingForm({ venue, userId }: BookingPageProps) {
                 </select>
               </div>
             )}
+            <div>
+              <label className="label">Expected attendance *</label>
+              <input
+                {...register('expected_attendance', {
+                  required: 'Required',
+                  min: { value: 1, message: 'Must be at least 1' },
+                  validate: (value) => {
+                    const maxCap = layoutId ? venue.layouts.find(l => l.id === layoutId)?.capacity || venue.capacity : venue.capacity
+                    return value <= maxCap || `Max capacity is ${maxCap}`
+                  },
+                  valueAsNumber: true,
+                })}
+                type="number" className="input" placeholder="e.g. 150"
+              />
+              {errors.expected_attendance && <p className="form-error">{errors.expected_attendance.message}</p>}
+              <p className="text-xs text-slate-400 mt-1">Max capacity: {layoutId ? venue.layouts.find(l => l.id === layoutId)?.capacity || venue.capacity : venue.capacity}</p>
+            </div>
           </div>
         )}
 
