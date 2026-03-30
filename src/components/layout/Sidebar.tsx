@@ -16,6 +16,8 @@ import {
   ArrowRightOnRectangleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChartBarIcon,
+  ClipboardDocumentCheckIcon,
 } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -30,7 +32,7 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/dashboard',             label: 'Dashboard',        Icon: HomeIcon,                    roles: ['organizer', 'manager', 'admin'] },
+  { href: '/dashboard',             label: 'Dashboard',        Icon: HomeIcon,                    roles: ['organizer', 'manager'] },
   { href: '/venues',                label: 'Browse Venues',    Icon: MagnifyingGlassIcon,          roles: ['organizer'] },
   { href: '/bookings',              label: 'My Bookings',      Icon: CalendarDaysIcon,             roles: ['organizer'] },
   { href: '/payments',              label: 'Payments',         Icon: CreditCardIcon,               roles: ['organizer'] },
@@ -38,9 +40,13 @@ const navItems: NavItem[] = [
   { href: '/manager/venues',        label: 'My Venues',        Icon: BuildingStorefrontIcon,       roles: ['manager'] },
   { href: '/manager/calendar',      label: 'Calendar',         Icon: CalendarDaysIcon,             roles: ['manager'] },
   { href: '/manager/payments',      label: 'Financials',       Icon: CreditCardIcon,               roles: ['manager'] },
+  { href: '/admin',                 label: 'Dashboard',        Icon: HomeIcon,                     roles: ['admin'] },
   { href: '/admin/users',           label: 'Users',            Icon: UsersIcon,                    roles: ['admin'] },
   { href: '/admin/venues',          label: 'All Venues',       Icon: BuildingStorefrontIcon,       roles: ['admin'] },
   { href: '/admin/bookings',        label: 'All Bookings',     Icon: ClipboardDocumentListIcon,    roles: ['admin'] },
+  { href: '/admin/analytics',       label: 'Analytics',        Icon: ChartBarIcon,                 roles: ['admin'] },
+  { href: '/admin/settings',        label: 'Settings',         Icon: Cog6ToothIcon,                roles: ['admin'] },
+  { href: '/admin/audit',           label: 'Audit Log',        Icon: ClipboardDocumentCheckIcon,   roles: ['admin'] },
 ]
 
 interface SidebarProps {
@@ -82,7 +88,11 @@ export function Sidebar({ userRole, userName, userEmail, unreadCount = 0 }: Side
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
         {filteredNav.map(({ href, label, Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
+          // More precise active state detection to avoid multiple highlighted items
+          const isExactMatch = pathname === href
+          const isSubPath = pathname.startsWith(href + '/') && href !== '/dashboard' && href !== '/admin'
+          const active = isExactMatch || isSubPath
+
           return (
             <Link
               key={href}
@@ -100,29 +110,33 @@ export function Sidebar({ userRole, userName, userEmail, unreadCount = 0 }: Side
           )
         })}
 
-        {/* Notifications */}
-        <Link
-          href="/notifications"
-          title={collapsed ? 'Notifications' : undefined}
-          className={cn('nav-link relative', collapsed && 'justify-center px-2')}
-        >
-          <BellIcon className="h-5 w-5 shrink-0" />
-          {!collapsed && <span className="truncate">Notifications</span>}
-          {unreadCount > 0 && (
-            <span className={cn(
-              'absolute bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center',
-              collapsed ? 'top-1 right-1 h-4 w-4' : 'right-2 h-5 w-5'
-            )}>
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </Link>
+        {/* Notifications - Only for non-admin users */}
+        {userRole !== 'admin' && (
+          <Link
+            href="/notifications"
+            title={collapsed ? 'Notifications' : undefined}
+            className={cn('nav-link relative', collapsed && 'justify-center px-2')}
+          >
+            <BellIcon className="h-5 w-5 shrink-0" />
+            {!collapsed && <span className="truncate">Notifications</span>}
+            {unreadCount > 0 && (
+              <span className={cn(
+                'absolute bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center',
+                collapsed ? 'top-1 right-1 h-4 w-4' : 'right-2 h-5 w-5'
+              )}>
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Link>
+        )}
 
-        {/* Settings */}
-        <Link href="/settings" title={collapsed ? 'Settings' : undefined} className={cn('nav-link', collapsed && 'justify-center px-2')}>
-          <Cog6ToothIcon className="h-5 w-5 shrink-0" />
-          {!collapsed && <span className="truncate">Settings</span>}
-        </Link>
+        {/* Settings - Only for non-admin users */}
+        {userRole !== 'admin' && (
+          <Link href="/settings" title={collapsed ? 'Settings' : undefined} className={cn('nav-link', collapsed && 'justify-center px-2')}>
+            <Cog6ToothIcon className="h-5 w-5 shrink-0" />
+            {!collapsed && <span className="truncate">Settings</span>}
+          </Link>
+        )}
       </nav>
 
       {/* User + Collapse */}

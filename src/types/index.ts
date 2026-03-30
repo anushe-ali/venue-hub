@@ -20,6 +20,7 @@ export interface Profile {
   organization?: string
   avatar_url?: string
   billing_info: Record<string, unknown>
+  is_active: boolean
   created_at: string
   updated_at: string
 }
@@ -234,6 +235,81 @@ export interface BookingFormData {
   layout_id?: string
   equipment_ids?: string[]
   special_requests?: string
+}
+
+// ============================================================
+// Admin System Types
+// ============================================================
+
+export interface AdminAuditLog {
+  id: string
+  admin_id: string
+  action_type: string
+  target_type: string
+  target_id?: string
+  old_value?: Record<string, unknown>
+  new_value?: Record<string, unknown>
+  description: string
+  ip_address?: string
+  user_agent?: string
+  created_at: string
+  admin?: Profile
+}
+
+export interface PlatformSetting {
+  id: string
+  key: string
+  value: unknown
+  category: 'fees' | 'policies' | 'payment' | 'email' | 'system'
+  description?: string
+  updated_by?: string
+  updated_at: string
+  created_at: string
+  updater?: Profile
+}
+
+export interface UserActivityStat {
+  id: string
+  date: string
+  metric: string
+  value: number
+  metadata: Record<string, unknown>
+  created_at: string
+}
+
+export interface AdminAnalyticsSummary {
+  active_users: number
+  organizer_count: number
+  manager_count: number
+  active_venues: number
+  approved_bookings: number
+  pending_bookings: number
+  total_revenue: number
+  revenue_last_30_days: number
+  last_updated: string
+}
+
+export interface RevenueByMonth {
+  month: string
+  revenue: number
+}
+
+export interface UserGrowth {
+  date: string
+  new_users: number
+}
+
+export interface TopVenue {
+  venue_id: string
+  venue_name: string
+  city: string
+  booking_count: number
+  total_revenue: number
+}
+
+export interface BookingsByStatus {
+  status: BookingStatus
+  count: number
 }
 
 // ============================================================
