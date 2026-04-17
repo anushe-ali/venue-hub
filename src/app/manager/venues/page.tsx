@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import { BuildingStorefrontIcon, PlusIcon, PencilIcon } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ManagerVenuesPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()

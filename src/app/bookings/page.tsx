@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatDate, formatTime, getStatusColor } from '@/lib/utils'
 import { CalendarDaysIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function BookingsPage({ searchParams }: { searchParams: { status?: string } }) {
   const params = await searchParams
   const supabase = createClient()

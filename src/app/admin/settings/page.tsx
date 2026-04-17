@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { SettingsForm } from '@/components/admin/SettingsForm'
 import { getAllSettings } from '@/lib/settings'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminSettingsPage() {
   const supabase = createClient()
 

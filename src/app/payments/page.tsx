@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatDate, formatRelative, getStatusColor } from '@/lib/utils'
 import { CreditCardIcon } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function OrganizerPaymentsPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()

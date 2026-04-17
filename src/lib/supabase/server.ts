@@ -7,11 +7,11 @@ export function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        async get(name) {
+        async get(name: string) {
           const cookieStore = await cookies()
           return cookieStore.get(name)?.value
         },
-        async set(name, value, options) {
+        async set(name: string, value: string, options: any) {
           const cookieStore = await cookies()
           try {
             cookieStore.set(name, value, options)
@@ -19,7 +19,7 @@ export function createClient() {
             // Called from a Server Component — ignore
           }
         },
-        async remove(name, options) {
+        async remove(name: string, options: any) {
           const cookieStore = await cookies()
           try {
             cookieStore.set(name, '', options)

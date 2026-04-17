@@ -18,6 +18,8 @@ const TYPE_ICONS: Record<string, string> = {
   refund_processed:       '💰',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function NotificationsPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()

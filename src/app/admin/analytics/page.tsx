@@ -19,6 +19,8 @@ import type {
   BookingsByStatus,
 } from '@/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminAnalyticsPage() {
   const supabase = createClient()
 

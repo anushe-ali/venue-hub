@@ -15,6 +15,8 @@ interface SearchParams {
   amenities?: string
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function VenuesPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
   const supabase = createClient()
@@ -61,7 +63,7 @@ export default async function VenuesPage({ searchParams }: { searchParams: Searc
       <div className="flex gap-6">
         {/* Filters sidebar */}
         <aside className="w-64 shrink-0">
-          <VenueFilters searchParams={params} />
+          <VenueFilters searchParams={params as Record<string, string | undefined>} />
         </aside>
 
         {/* Results */}

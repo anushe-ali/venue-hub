@@ -4,6 +4,8 @@ import VenueForm from '@/components/venues/VenueForm'
 import Link from 'next/link'
 import { ArrowLeftIcon } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewVenuePage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()

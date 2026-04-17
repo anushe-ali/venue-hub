@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { formatDate, formatRelative } from '@/lib/utils'
 import { UsersIcon } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminUsersPage({ searchParams }: { searchParams: { role?: string; status?: string; q?: string } }) {
   const params = await searchParams
   const supabase = createClient()

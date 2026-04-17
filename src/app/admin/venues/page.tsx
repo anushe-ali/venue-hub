@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { formatCurrency, formatRelative } from '@/lib/utils'
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminVenuesPage({ searchParams }: { searchParams: { q?: string; active?: string } }) {
   const params = await searchParams
   const supabase = createClient()

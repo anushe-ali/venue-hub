@@ -7,6 +7,8 @@ import {
   XCircleIcon, CurrencyDollarIcon, ArrowRightIcon,
 } from '@heroicons/react/24/outline'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ManagerDashboard({ searchParams }: { searchParams: { status?: string } }) {
   const params = await searchParams
   const supabase = createClient()

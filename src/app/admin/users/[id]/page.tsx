@@ -7,6 +7,8 @@ import { formatDate, formatRelative, formatCurrency } from '@/lib/utils'
 import { ArrowLeftIcon, EnvelopeIcon, PhoneIcon, BuildingOfficeIcon, CalendarIcon } from '@heroicons/react/24/outline'
 import type { Profile, AdminAuditLog } from '@/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminUserDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params
   const supabase = createClient()
@@ -188,7 +190,7 @@ export default async function AdminUserDetailPage({ params }: { params: { id: st
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-slate-600">Total Revenue</span>
-                    <span className="text-lg font-semibold text-slate-900">{formatCurrency(activityStats.totalRevenue)}</span>
+                    <span className="text-lg font-semibold text-slate-900">{formatCurrency(activityStats.totalRevenue ?? 0)}</span>
                   </div>
                 </div>
               )}

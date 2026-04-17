@@ -11,6 +11,8 @@ import {
 } from '@heroicons/react/24/outline'
 import type { AdminAnalyticsSummary, Profile, Booking, AdminAuditLog } from '@/types'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminDashboardPage() {
   const supabase = createClient()
 

@@ -316,7 +316,7 @@ export interface BookingsByStatus {
 // Supabase DB type helper (simplified)
 // ============================================================
 
-export type Tables<T extends string> = {
+export type Tables = {
   profiles: Profile
   venues: Venue
   bookings: Booking
@@ -329,4 +329,4 @@ export type Tables<T extends string> = {
   venue_blackouts: VenueBlackout
   booking_equipment: BookingEquipment
   booking_modifications: BookingModification
-}[T]
+}

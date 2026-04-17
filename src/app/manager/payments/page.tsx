@@ -4,6 +4,8 @@ import { formatCurrency, formatDate, formatRelative } from '@/lib/utils'
 import { CurrencyDollarIcon, ArrowTrendingUpIcon, BanknotesIcon, ReceiptRefundIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ManagerPaymentsPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
